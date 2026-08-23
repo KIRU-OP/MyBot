@@ -1,0 +1,37 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploying to VPS via tmux
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            # 1. Kill existing tmux session
+            tmux kill-session -t aera || true
+            
+            # 2. Create a new detached tmux session
+            tmux new-session -d -s aera
+            
+            # 3. Send commands to tmux session
+            tmux send-keys -t aera 'cd ~/aeraBot' C-m
+            tmux send-keys -t aera 'source hasiimusic/bin/activate' C-m
+            tmux send-keys -t aera 'git checkout main' C-m
+            tmux send-keys -t aera 'git fetch --all' C-m
+            tmux send-keys -t aera 'git reset --hard origin/main' C-m
+            tmux send-keys -t aera 'git pull origin main' C-m
+            tmux send-keys -t aera 'pip uninstall -r requirements.txt -y' C-m
+            tmux send-keys -t aera 'pip install --no-cache-dir -r requirements.txt' C-m
+            tmux send-keys -t aera 'clear' C-m
+            tmux send-keys -t aera 'bash start' C-m
