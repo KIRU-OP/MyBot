@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  hasii:
+    build: .
+    container_name: hasii_music_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./aera/cookies:/app/aera/cookies
+      - ./downloads:/app/downloads
+    command: bash start
